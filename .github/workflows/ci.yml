@@ -1,0 +1,45 @@
+name: CI
+
+# Set the branch (main)
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Build the project
+      - name: Build project
+        run: make
+
+      # “Install” the project into a staging directory.
+      # In our Makefile, the install target does:
+      #   install -d $(DESTDIR)/bin
+      #   install ./iio_fm_radio $(DESTDIR)/bin/iio_fm_radio
+      #   install ./iio_fm_radio_play $(DESTDIR)/bin/iio_fm_radio_play
+      # By setting DESTDIR to a temporary directory, we can check that the files get installed.
+      - name: Install project
+        run: |
+          # Create a staging directory (simulate /usr/local inside "install")
+          mkdir -p install/usr/local
+          # Run make install overriding DESTDIR to the staging area
+          make install DESTDIR="$(pwd)/install/usr/local"
+
+      # Verify that the installed files exist
+      - name: Verify installation
+        run: |
+          if [ ! -f install/usr/local/bin/iio_fm_radio ]; then
+            echo "ERROR: iio_fm_radio was not installed properly!"
+            exit 1
+          fi
+          if [ ! -f install/usr/local/bin/iio_fm_radio_play ]; then
+            echo "ERROR: iio_fm_radio_play was not installed properly!"
+            exit 1
+          fi
+          echo "Installation verified."
