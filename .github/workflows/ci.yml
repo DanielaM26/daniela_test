@@ -31,6 +31,11 @@ jobs:
           # Run make install overriding DESTDIR to the staging area
           make install DESTDIR="$(pwd)/install/usr/local"
 
+      - name: List install directory
+        run: |
+          echo "Contents of install/usr/local/bin:"
+          ls -laR install/usr/local/bin/
+
       # Verify that the installed files exist
       - name: Verify installation
         run: |
